@@ -46,9 +46,36 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         },
         child: new ListView(
-          children: _articles.map((article) => Text(article.text)).toList(),
+          children: _articles.map(_buildItem).toList(),
         ),
       ),
     );
   }
+
+  Widget _buildItem(Article article) {
+    return new Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: new ExpansionTile(
+        title: new Text(article.text, style: new TextStyle(fontSize: 24.0)),
+        children: <Widget>[
+          new Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              new Text("${article.commentsCount} comments"),
+              new IconButton(
+                icon: new Icon(Icons.launch),
+                onPressed: () async {
+                  final fakeUrl = "http://${article.domain}";
+                  if (await canLaunch(fakeUrl)) {
+                    launch(fakeUrl);
+                  }
+                },
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 }
