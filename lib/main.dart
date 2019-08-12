@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(
-        title: 'Flutter Demo Home Page',
+        title: 'Flutter Hacker News',
         bloc: bloc,
       ),
     );
@@ -58,6 +58,26 @@ class _MyHomePageState extends State<MyHomePage> {
           children: snapshot.data.map(_buildItem).toList(),
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        items: [
+          BottomNavigationBarItem(
+            title: Text('Top Stories'),
+            icon: Icon(Icons.arrow_drop_up),
+          ),
+          BottomNavigationBarItem(
+            title: Text('New Stories'),
+            icon: Icon(Icons.new_releases),
+          ),
+        ],
+        onTap: (index) {
+          if (index == 0) {
+            widget.bloc.storiesType.add(StoriesType.topStories);
+          } else {
+            widget.bloc.storiesType.add(StoriesType.newStories);
+          }
+        },
+      ),
     );
   }
 
@@ -67,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
       padding: const EdgeInsets.all(16.0),
       child: ExpansionTile(
         title:
-            Text(article.title ?? '[null]', style: TextStyle(fontSize: 24.0)),
+        Text(article.title ?? '[null]', style: TextStyle(fontSize: 24.0)),
         children: <Widget>[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
