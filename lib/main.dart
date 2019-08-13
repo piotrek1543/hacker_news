@@ -48,7 +48,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
       padding: const EdgeInsets.all(16.0),
       child: ExpansionTile(
         title:
-            Text(article.title ?? '[null]', style: TextStyle(fontSize: 24.0)),
+        Text(article.title ?? '[null]', style: TextStyle(fontSize: 24.0)),
         children: <Widget>[
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -118,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class LoadingInfo extends StatefulWidget {
-  Stream<bool> _isLoading;
+  final Stream<bool> _isLoading;
 
   LoadingInfo(this._isLoading);
 
@@ -142,7 +141,7 @@ class LoadingInfoState extends State<LoadingInfo>
         stream: widget._isLoading,
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           //if (snapshot.hasData && snapshot.data) {
-          _controller.forward().then((f) {
+          _controller.forward().then((Null f) {
             _controller.reverse();
           });
           return FadeTransition(
