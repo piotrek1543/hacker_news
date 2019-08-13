@@ -1,14 +1,18 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hacker_news/src/article.dart';
 import 'package:hacker_news/src/hacker_news_bloc.dart';
 import 'package:hacker_news/src/loading_info.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   final hnBloc = HackerNewsBloc();
   runApp(MyApp(bloc: hnBloc));
+  // TODO(filiph): DO WE CLOSE THE BLOCK SUBSCRIPTIONS HERE?!
 }
 
 class MyApp extends StatelessWidget {
@@ -63,29 +67,43 @@ class _MyHomePageState extends State<MyHomePage> {
         elevation: 0.0,
         actions: [
           Builder(
-            builder: (context) =>
-                IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () async {
-                    final Article result = await showSearch(
-                      context: context,
-                      delegate: ArticleSearch(widget.bloc.articles),
-                    );
-                    if (result != null && await canLaunch(result.url)) {
-                      launch(result.url);
-                    }
-                  },
-                ),
+            builder: (context) => IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () async {
+                final Article result = await showSearch(
+                  context: context,
+                  delegate: ArticleSearch(_currentIndex == 0
+                      ? widget.bloc.topArticles
+                      : widget.bloc.newArticles),
+                );
+                if (result != null) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => HackerNewsWebPage(result.url)));
+                }
+              },
+            ),
           ),
         ],
       ),
-      body: StreamBuilder<UnmodifiableListView<Article>>(
-        stream: widget.bloc.articles,
-        initialData: UnmodifiableListView<Article>([]),
-        builder: (context, snapshot) => ListView(
-          children: snapshot.data.map(_buildItem).toList(),
-        ),
-      ),
+      body: _currentIndex == 0
+          ? StreamBuilder<UnmodifiableListView<Article>>(
+              stream: widget.bloc.topArticles,
+              initialData: UnmodifiableListView<Article>([]),
+              builder: (context, snapshot) => ListView(
+                key: PageStorageKey(0),
+                children: snapshot.data.map(_buildItem).toList(),
+              ),
+            )
+          : StreamBuilder<UnmodifiableListView<Article>>(
+              stream: widget.bloc.newArticles,
+              initialData: UnmodifiableListView<Article>([]),
+              builder: (context, snapshot) => ListView(
+                key: PageStorageKey(1),
+                children: snapshot.data.map(_buildItem).toList(),
+              ),
+            ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         items: [
@@ -114,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _buildItem(Article article) {
     return Padding(
-      key: Key(article.title),
+      key: PageStorageKey(article.title),
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 12.0),
       child: ExpansionTile(
         title:
@@ -122,19 +140,35 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+            child: Column(
               children: <Widget>[
-                Text('${article.descendants} comments'),
-                SizedBox(width: 16.0),
-                IconButton(
-                  icon: Icon(Icons.launch),
-                  onPressed: () async {
-                    if (await canLaunch(article.url)) {
-                      launch(article.url);
-                    }
-                  },
-                )
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Text('${article.descendants} comments'),
+                    SizedBox(width: 16.0),
+                    IconButton(
+                      icon: Icon(Icons.launch),
+                      onPressed: () async {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    HackerNewsWebPage(article.url)));
+                      },
+                    )
+                  ],
+                ),
+                Container(
+                  height: 200,
+                  child: WebView(
+                    javascriptMode: JavascriptMode.unrestricted,
+                    initialUrl: article.url,
+                    gestureRecognizers: Set()
+                      ..add(Factory<VerticalDragGestureRecognizer>(
+                          () => VerticalDragGestureRecognizer())),
+                  ),
+                ),
               ],
             ),
           ),
@@ -180,8 +214,8 @@ class ArticleSearch extends SearchDelegate<Article> {
         if (!snapshot.hasData) {
           return Center(
               child: Text(
-                'No data!',
-              ));
+            'No data!',
+          ));
         }
 
         final results = snapshot.data
@@ -189,22 +223,20 @@ class ArticleSearch extends SearchDelegate<Article> {
 
         return ListView(
           children: results
-              .map<ListTile>((a) =>
-              ListTile(
-                title: Text(a.title,
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .subhead
-                        .copyWith(fontSize: 16.0)),
-                leading: Icon(Icons.book),
-                onTap: () async {
-                  if (await canLaunch(a.url)) {
-                    await launch(a.url);
-                  }
-                  close(context, a);
-                },
-              ))
+              .map<ListTile>((a) => ListTile(
+                    title: Text(a.title,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subhead
+                            .copyWith(fontSize: 16.0)),
+                    leading: Icon(Icons.book),
+                    onTap: () async {
+                      if (await canLaunch(a.url)) {
+                        await launch(a.url);
+                      }
+                      close(context, a);
+                    },
+                  ))
               .toList(),
         );
       },
@@ -220,8 +252,8 @@ class ArticleSearch extends SearchDelegate<Article> {
         if (!snapshot.hasData) {
           return Center(
               child: Text(
-                'No data!',
-              ));
+            'No data!',
+          ));
         }
 
         final results = snapshot.data
@@ -229,24 +261,38 @@ class ArticleSearch extends SearchDelegate<Article> {
 
         return ListView(
           children: results
-              .map<ListTile>((a) =>
-              ListTile(
-                title: Text(a.title,
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .subhead
-                        .copyWith(
-                      fontSize: 16.0,
-                      color: Colors.blue,
-                    )),
-                onTap: () {
-                  close(context, a);
-                },
-              ))
+              .map<ListTile>((a) => ListTile(
+                    title: Text(a.title,
+                        style: Theme.of(context).textTheme.subhead.copyWith(
+                              fontSize: 16.0,
+                              color: Colors.blue,
+                            )),
+                    onTap: () {
+                      close(context, a);
+                    },
+                  ))
               .toList(),
         );
       },
+    );
+  }
+}
+
+class HackerNewsWebPage extends StatelessWidget {
+  HackerNewsWebPage(this.url);
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Web Page'),
+      ),
+      body: WebView(
+        initialUrl: url,
+        javascriptMode: JavascriptMode.unrestricted,
+      ),
     );
   }
 }
