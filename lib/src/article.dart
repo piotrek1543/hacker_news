@@ -16,7 +16,10 @@ abstract class Article implements Built<Article, ArticleBuilder> {
   @nullable
   bool get deleted;
 
-  String get type; // "job", "story", "comment", "poll", or "pollopt".
+  /// This is the type of the article.
+  ///
+  /// It can be any of these: "job", "story", "comment", "poll", or "pollopt".
+  String get type;
 
   String get by;
 
@@ -56,14 +59,14 @@ abstract class Article implements Built<Article, ArticleBuilder> {
 }
 
 List<int> parseTopStories(String jsonStr) {
-  final parsed = json.jsonDecode(jsonStr);
-  final listOfIds = List<int>.from(parsed);
+  var parsed = json.jsonDecode(jsonStr);
+  var listOfIds = List<int>.from(parsed);
   return listOfIds;
 }
 
 Article parseArticle(String jsonStr) {
-  final parsed = json.jsonDecode(jsonStr);
-  Article article =
+  var parsed = json.jsonDecode(jsonStr);
+  var article =
   standardSerializers.deserializeWith(Article.serializer, parsed);
   return article;
 }
