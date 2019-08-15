@@ -39,8 +39,8 @@ class ArticleSearch extends SearchDelegate<Article> {
         if (!snapshot.hasData) {
           return Center(
               child: Text(
-            'No data!',
-          ));
+                'No data!',
+              ));
         }
 
         var results = snapshot.data
@@ -49,19 +49,19 @@ class ArticleSearch extends SearchDelegate<Article> {
         return ListView(
           children: results
               .map<ListTile>((a) => ListTile(
-                    title: Text(a.title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subhead
-                            .copyWith(fontSize: 16.0)),
-                    leading: Icon(Icons.book),
-                    onTap: () async {
-                      if (await canLaunch(a.url)) {
-                        await launch(a.url);
-                      }
-                      close(context, a);
-                    },
-                  ))
+            title: Text(a.title,
+                style: Theme.of(context)
+                    .textTheme
+                    .subhead
+                    .copyWith(fontSize: 16.0)),
+            leading: Icon(Icons.book),
+            onTap: () async {
+              if (await canLaunch(a.url)) {
+                await launch(a.url);
+              }
+              close(context, a);
+            },
+          ))
               .toList(),
         );
       },
@@ -77,8 +77,8 @@ class ArticleSearch extends SearchDelegate<Article> {
         if (!snapshot.hasData) {
           return Center(
               child: Text(
-            'No data!',
-          ));
+                'No data!',
+              ));
         }
 
         final results = snapshot.data
@@ -87,15 +87,15 @@ class ArticleSearch extends SearchDelegate<Article> {
         return ListView(
           children: results
               .map<ListTile>((a) => ListTile(
-                    title: Text(a.title,
-                        style: Theme.of(context).textTheme.subhead.copyWith(
-                              fontSize: 16.0,
-                              color: Colors.blue,
-                            )),
-                    onTap: () {
-                      close(context, a);
-                    },
-                  ))
+            title: Text(a.title,
+                style: Theme.of(context).textTheme.subhead.copyWith(
+                  fontSize: 16.0,
+                  color: Colors.blue,
+                )),
+            onTap: () {
+              close(context, a);
+            },
+          ))
               .toList(),
         );
       },
