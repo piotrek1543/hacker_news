@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const Duration headlineAnimationDuration = const Duration(milliseconds: 600);
+const Duration headlineAnimationDuration = const Duration(milliseconds: 400);
 const List<Color> headlineTextColors = [Colors.blue, Colors.deepOrange];
 
 class Headline extends ImplicitlyAnimatedWidget {
@@ -36,13 +36,13 @@ class HeadlineState extends AnimatedWidgetBaseState<Headline> {
     _colorTween = visitor(
       _colorTween,
       widget.targetColor,
-      (color) => GhostFadeTween(begin: color),
+          (color) => GhostFadeTween(begin: color),
     );
 
     _switchStringTween = visitor(
       _switchStringTween,
       widget.text,
-      (value) => SwitchStringTween(begin: value),
+          (value) => SwitchStringTween(begin: value),
     );
   }
 }
