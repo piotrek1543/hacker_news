@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hacker_news/src/hacker_news_bloc.dart';
+import 'package:hacker_news/src/notifiers/hacker_news_api.dart';
 import 'package:provider/provider.dart';
 
 class LoadingInfo extends StatefulWidget {
