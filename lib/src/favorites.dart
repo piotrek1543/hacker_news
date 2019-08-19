@@ -8,8 +8,11 @@ part 'favorites.g.dart';
 class Favorites extends Table {
   // article id
   IntColumn get id => integer().customConstraint('UNIQUE')();
+
   TextColumn get title => text()();
+
   TextColumn get url => text()();
+
   TextColumn get category => text().nullable()();
 }
 
@@ -43,9 +46,11 @@ class MyDatabase extends _$MyDatabase {
   // watches all todo entries in a given category. The stream will automatically
   // emit new items whenever the underlying data changes.
   Stream<bool> isFavorite(int id) {
-    // TODO: is there a count for Moor ? MOAR APIS?!
-    return (select(favorites)..where((favorite) => favorite.id.equals(id)))
-        .watch()
-        .map((favoritesList) => favoritesList.length >= 1);
+    // TODO: https://github.com/simolus3/moor/issues/55#issuecomment-507808555
+    return select(favorites).watch().map((favoritesList) =>
+        favoritesList.where((favorite) => favorite.id == id).length >= 1);
+    // return (select(favorites)..where((favorite) => favorite.id.equals(id)))
+    //    .watch()
+    //    .map((favoritesList) => favoritesList.length >= 1);
   }
 }
