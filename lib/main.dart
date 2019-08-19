@@ -2,10 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hacker_news/src/article.dart';
+import 'package:hacker_news/src/favorites.dart';
 import 'package:hacker_news/src/notifiers/hacker_news_api.dart';
-import 'package:hacker_news/src/widgets/loading_info.dart';
 import 'package:hacker_news/src/notifiers/prefs.dart';
 import 'package:hacker_news/src/widgets/headline.dart';
+import 'package:hacker_news/src/widgets/loading_info.dart';
 import 'package:hacker_news/src/widgets/search.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -18,6 +19,7 @@ void main() {
           builder: (_) => LoadingTabsCount(),
           dispose: (_, value) => value.dispose(),
         ),
+        Provider<MyDatabase>(builder: (_) => MyDatabase()),
         ChangeNotifierProvider(
           builder: (context) => HackerNewsNotifier(
             // TODO(filiph): revisit when ProxyProvider lands
@@ -156,59 +158,80 @@ class _Item extends StatelessWidget {
     @required this.prefs,
   }) : super(key: key);
 
+  printEverything(BuildContext context) async {
+    print(await Provider.of<MyDatabase>(context).allFavorites);
+  }
+
   @override
   Widget build(BuildContext context) {
     final prefs = Provider.of<PrefsNotifier>(context);
-
+    var myDatabase = Provider.of<MyDatabase>(context);
+    printEverything(context);
     assert(article.title != null);
     return Padding(
       key: PageStorageKey(article.title),
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 12.0),
-      child: ExpansionTile(
-        title: Text(article.title, style: TextStyle(fontSize: 24.0)),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+      child: Column(
+        children: <Widget>[
+          StreamBuilder<bool>(
+              stream: myDatabase.isFavorite(article.id),
+              builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data) {
+                  return IconButton(
+                      icon: Icon(Icons.star),
+                      onPressed: () => myDatabase.removeFavorite(article.id));
+                }
+                return IconButton(
+                    icon: Icon(Icons.star_border),
+                    onPressed: () => myDatabase.addFavorite(article));
+              }),
+          ExpansionTile(
+            title: Text(article.title, style: TextStyle(fontSize: 24.0)),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
                   children: <Widget>[
-                    FlatButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              HackerNewsCommentPage(article.id),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        FlatButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  HackerNewsCommentPage(article.id),
+                            ),
+                          ),
+                          child: Text('${article.descendants} comments'),
                         ),
-                      ),
-                      child: Text('${article.descendants} comments'),
+                        SizedBox(width: 16.0),
+                        IconButton(
+                          icon: Icon(Icons.launch),
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      HackerNewsWebPage(article.url))),
+                        )
+                      ],
                     ),
-                    SizedBox(width: 16.0),
-                    IconButton(
-                      icon: Icon(Icons.launch),
-                      onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  HackerNewsWebPage(article.url))),
-                    )
+                    prefs.showWebView
+                        ? Container(
+                            height: 200,
+                            child: WebView(
+                              javascriptMode: JavascriptMode.unrestricted,
+                              initialUrl: article.url,
+                              gestureRecognizers: Set()
+                                ..add(Factory<VerticalDragGestureRecognizer>(
+                                    () => VerticalDragGestureRecognizer())),
+                            ),
+                          )
+                        : Container(),
                   ],
                 ),
-                prefs.showWebView
-                    ? Container(
-                  height: 200,
-                  child: WebView(
-                    javascriptMode: JavascriptMode.unrestricted,
-                    initialUrl: article.url,
-                    gestureRecognizers: Set()
-                      ..add(Factory<VerticalDragGestureRecognizer>(
-                              () => VerticalDragGestureRecognizer())),
-                  ),
-                )
-                    : Container(),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
