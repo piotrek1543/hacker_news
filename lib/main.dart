@@ -15,7 +15,7 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        Provider<LoadingTabsCount>(
+        ListenableProvider<LoadingTabsCount>(
           builder: (_) => LoadingTabsCount(),
           dispose: (_, value) => value.dispose(),
         ),
@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (current.articles.isEmpty && !current.isLoading) {
       // New tab with no data. Let's fetch some.
-      current.refresh();
+      Future(() => current.refresh());
     }
 
     return Scaffold(
@@ -97,8 +97,6 @@ class _MyHomePageState extends State<MyHomePage> {
           text: tabs[_currentIndex].name,
           index: _currentIndex,
         ),
-        // leading: Consumer<LoadingTabsCount>(
-        //     builder: (context, loading, child) => LoadingInfo(loading)),
         elevation: 0.0,
         actions: [
           IconButton(
@@ -117,23 +115,14 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
         ],
-        // TODO: loading value -- why is it never not 1?
         // TODO: Make an iconButton that opens a drawer because
-        // TODO: Scaffold hard-codes the drawer behavior.
+        // Scaffold hard-codes the drawer behavior.
         // TODO: Make a favorites page.
         leading: Consumer<LoadingTabsCount>(builder: (context, loading, child) {
           bool isLoading = loading.value > 0;
-          print(loading.value);
-          //return LoadingInfo(loading);
           return AnimatedSwitcher(
             duration: Duration(milliseconds: 500),
-            child: isLoading
-                ? LoadingInfo(loading)
-                : Drawer(
-                    child: Container(
-                        color: Colors.white,
-                        height: 300,
-                        child: Text('favorites page'))),
+            child: isLoading ? LoadingInfo(loading) : Icon(Icons.menu),
           );
         }),
       ),
@@ -163,6 +152,9 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         },
       ),
+      drawer: Drawer(
+          child: Container(
+              color: Colors.white, height: 300, child: Text('favorites page'))),
     );
   }
 }
@@ -232,15 +224,15 @@ class _Item extends StatelessWidget {
                     ),
                     prefs.showWebView
                         ? Container(
-                            height: 200,
-                            child: WebView(
-                              javascriptMode: JavascriptMode.unrestricted,
-                              initialUrl: article.url,
-                              gestureRecognizers: Set()
-                                ..add(Factory<VerticalDragGestureRecognizer>(
-                                    () => VerticalDragGestureRecognizer())),
-                            ),
-                          )
+                      height: 200,
+                      child: WebView(
+                        javascriptMode: JavascriptMode.unrestricted,
+                        initialUrl: article.url,
+                        gestureRecognizers: Set()
+                          ..add(Factory<VerticalDragGestureRecognizer>(
+                                  () => VerticalDragGestureRecognizer())),
+                      ),
+                    )
                         : Container(),
                   ],
                 ),
