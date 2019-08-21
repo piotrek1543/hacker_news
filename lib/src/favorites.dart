@@ -47,8 +47,8 @@ class MyDatabase extends _$MyDatabase {
   // emit new items whenever the underlying data changes.
   Stream<bool> isFavorite(int id) {
     // TODO: https://github.com/simolus3/moor/issues/55#issuecomment-507808555
-    return select(favorites).watch().map((favoritesList) =>
-        favoritesList.where((favorite) => favorite.id == id).length >= 1);
+    return select(favorites).watch().map(
+        (favoritesList) => favoritesList.any((favorite) => favorite.id == id));
     // return (select(favorites)..where((favorite) => favorite.id.equals(id)))
     //    .watch()
     //    .map((favoritesList) => favoritesList.length >= 1);
