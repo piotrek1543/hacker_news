@@ -31,7 +31,7 @@ dependencies:
 
   webview_flutter: ^0.3.7+1
 
-  provider: ^2.0.1
+  provider: ^3.0.0
 
   flutter:
     sdk: flutter

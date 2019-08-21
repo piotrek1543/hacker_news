@@ -5,6 +5,8 @@ import 'package:hacker_news/src/article.dart';
 import 'package:hacker_news/src/favorites.dart';
 import 'package:hacker_news/src/notifiers/hacker_news_api.dart';
 import 'package:hacker_news/src/notifiers/prefs.dart';
+import 'package:hacker_news/src/pages/favorites.dart';
+import 'package:hacker_news/src/pages/settings.dart';
 import 'package:hacker_news/src/widgets/headline.dart';
 import 'package:hacker_news/src/widgets/loading_info.dart';
 import 'package:hacker_news/src/widgets/search.dart';
@@ -48,7 +50,10 @@ class MyApp extends StatelessWidget {
           textTheme: Theme.of(context).textTheme.copyWith(
               caption: TextStyle(color: Colors.white54),
               subhead: TextStyle(fontFamily: 'Garamond', fontSize: 10.0))),
-      home: MyHomePage(),
+      routes: {
+        '/': (context) => MyHomePage(),
+        '/settings': (context) => SettingsPage(),
+      },
     );
   }
 }
@@ -57,6 +62,12 @@ class MyHomePage extends StatefulWidget {
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
+
+/// The Key of the nested Navigator in the body of [_MyHomePageState].
+///
+/// It's a GlobalKey because we need to access it from the drawer (which is
+/// outside the body).
+GlobalKey<NavigatorState> _pageNavigatorKey = GlobalKey<NavigatorState>();
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
@@ -115,24 +126,45 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
         ],
-        // TODO: Make an iconButton that opens a drawer because
-        // Scaffold hard-codes the drawer behavior.
-        // TODO: Make a favorites page.
         leading: Consumer<LoadingTabsCount>(builder: (context, loading, child) {
           bool isLoading = loading.value > 0;
           return AnimatedSwitcher(
             duration: Duration(milliseconds: 500),
-            child: isLoading ? LoadingInfo(loading) : Icon(Icons.menu),
+            child: isLoading
+                // TODO: make sure that LoadingInfo is rotating when shown
+                //       or, better, collapse the two alternate widgets into one
+                ? LoadingInfo(loading)
+                : IconButton(
+                    icon: Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
           );
         }),
       ),
-      body: PageView.builder(
-        controller: _pageController,
-        itemCount: tabs.length,
-        itemBuilder: (context, index) => ChangeNotifierProvider.value(
-          notifier: tabs[index],
-          child: _TabPage(index),
-        ),
+      // A nested navigator so we can push routes in the body from the drawer.
+      body: Navigator(
+        key: _pageNavigatorKey,
+        onGenerateRoute: (settings) {
+          // TODO: use PageRouteBuilders below instead of MaterialPageRoute
+          //       and merely cross-fade the routes
+
+          if (settings.name == '/favorites') {
+            return MaterialPageRoute(
+              builder: (context) => FavoritesPage(),
+            );
+          }
+
+          return MaterialPageRoute(
+            builder: (context) => PageView.builder(
+              controller: _pageController,
+              itemCount: tabs.length,
+              itemBuilder: (context, index) => ChangeNotifierProvider.value(
+                value: tabs[index],
+                child: _TabPage(index),
+              ),
+            ),
+          );
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -153,8 +185,29 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       drawer: Drawer(
-          child: Container(
-              color: Colors.white, height: 300, child: Text('favorites page'))),
+        child: Container(
+          color: Colors.white,
+          child: ListView(
+            children: <Widget>[
+              DrawerHeader(
+                child: Text('HN APP'),
+              ),
+              ListTile(
+                title: Text('Favorites'),
+                onTap: () {
+                  _pageNavigatorKey.currentState
+                      .pushReplacementNamed('/favorites');
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text('Settings'),
+                onTap: () => Navigator.pushNamed(context, '/settings'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -224,15 +277,15 @@ class _Item extends StatelessWidget {
                     ),
                     prefs.showWebView
                         ? Container(
-                      height: 200,
-                      child: WebView(
-                        javascriptMode: JavascriptMode.unrestricted,
-                        initialUrl: article.url,
-                        gestureRecognizers: Set()
-                          ..add(Factory<VerticalDragGestureRecognizer>(
-                                  () => VerticalDragGestureRecognizer())),
-                      ),
-                    )
+                            height: 200,
+                            child: WebView(
+                              javascriptMode: JavascriptMode.unrestricted,
+                              initialUrl: article.url,
+                              gestureRecognizers: Set()
+                                ..add(Factory<VerticalDragGestureRecognizer>(
+                                    () => VerticalDragGestureRecognizer())),
+                            ),
+                          )
                         : Container(),
                   ],
                 ),
