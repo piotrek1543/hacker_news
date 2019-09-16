@@ -16,25 +16,20 @@ class HackerNewsNotifier with ChangeNotifier {
   Map<int, Article> _cachedArticles;
 
   bool _isLoading = false;
-
   bool get isLoading => _isLoading;
 
   List<Article> _topArticles = [];
-
   UnmodifiableListView<Article> get topArticles =>
       UnmodifiableListView(_topArticles);
 
   List<Article> _newArticles = [];
-
   UnmodifiableListView<Article> get newArticles =>
       UnmodifiableListView(_newArticles);
 
   List<Article> _articles = [];
-
   UnmodifiableListView<Article> get articles => UnmodifiableListView(_articles);
 
   StoriesType _storiesType;
-
   StoriesType get storiesType => _storiesType;
 
   HackerNewsNotifier() : _cachedArticles = Map() {
@@ -82,12 +77,6 @@ class HackerNewsNotifier with ChangeNotifier {
       throw HackerNewsApiError("Stories $type couldn't be fetched.");
     }
     return parseTopStories(response.body).take(10).toList();
-  }
-
-  Future<void> _initializeArticles() async {
-    final ids = await _getIds(StoriesType.topStories);
-    _topArticles = _articles = await _updateArticles(ids);
-    notifyListeners();
   }
 
   Future<List<Article>> _updateArticles(List<int> articleIds) async {
