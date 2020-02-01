@@ -43,6 +43,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      darkTheme: ThemeData.dark(),
       theme: ThemeData(
           primaryColor: primaryColor,
           scaffoldBackgroundColor: primaryColor,
@@ -186,7 +187,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       drawer: Drawer(
         child: Container(
-          color: Colors.white,
           child: ListView(
             children: <Widget>[
               DrawerHeader(
