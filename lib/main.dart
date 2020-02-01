@@ -97,6 +97,9 @@ class _MyHomePageState extends State<MyHomePage> {
     final hn = Provider.of<HackerNewsNotifier>(context);
     final tabs = hn.tabs;
     final current = tabs[_currentIndex];
+    final isDarkMode = Theme
+        .of(context)
+        .brightness == Brightness.dark;
 
     if (current.articles.isEmpty && !current.isLoading) {
       // New tab with no data. Let's fetch some.
@@ -168,6 +171,9 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        selectedItemColor: isDarkMode ? Colors.cyanAccent : Colors.blueAccent,
+        unselectedItemColor: isDarkMode ? Colors.white : Colors.black,
         currentIndex: _currentIndex,
         items: [
           for (final tab in tabs)
