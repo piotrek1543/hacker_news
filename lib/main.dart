@@ -41,13 +41,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return MaterialApp(
       title: 'Flutter Demo',
       darkTheme: ThemeData.dark(),
       theme: ThemeData(
           primaryColor: primaryColor,
           scaffoldBackgroundColor: primaryColor,
-          canvasColor: Colors.black,
+          canvasColor: isDarkMode ? Colors.black : Colors.white,
           textTheme: Theme.of(context).textTheme.copyWith(
               caption: TextStyle(color: Colors.white54),
               subhead: TextStyle(fontFamily: 'Garamond', fontSize: 10.0))),
@@ -97,9 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final hn = Provider.of<HackerNewsNotifier>(context);
     final tabs = hn.tabs;
     final current = tabs[_currentIndex];
-    final isDarkMode = Theme
-        .of(context)
-        .brightness == Brightness.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     if (current.articles.isEmpty && !current.isLoading) {
       // New tab with no data. Let's fetch some.
@@ -171,7 +171,6 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: isDarkMode ? Colors.black : Colors.white,
         selectedItemColor: isDarkMode ? Colors.cyanAccent : Colors.blueAccent,
         unselectedItemColor: isDarkMode ? Colors.white : Colors.black,
         currentIndex: _currentIndex,
