@@ -41,15 +41,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return MaterialApp(
       title: 'Flutter Demo',
       darkTheme: ThemeData.dark(),
       theme: ThemeData(
+          brightness: Provider
+              .of<PrefsNotifier>(context)
+              .userDarkMode
+              ? Brightness.dark
+              : Brightness.light,
+          canvasColor: Theme
+              .of(context)
+              .brightness == Brightness.dark ||
+              Provider
+                  .of<PrefsNotifier>(context)
+                  .userDarkMode
+              ? Colors.black
+              : Colors.white,
           primaryColor: primaryColor,
           scaffoldBackgroundColor: primaryColor,
-          canvasColor: isDarkMode ? Colors.black : Colors.white,
           textTheme: Theme.of(context).textTheme.copyWith(
               caption: TextStyle(color: Colors.white54),
               subhead: TextStyle(fontFamily: 'Garamond', fontSize: 10.0))),
@@ -171,8 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: isDarkMode ? Colors.cyanAccent : Colors.blueAccent,
-        unselectedItemColor: isDarkMode ? Colors.white : Colors.black,
+        backgroundColor: Colors.black,
         currentIndex: _currentIndex,
         items: [
           for (final tab in tabs)
