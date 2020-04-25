@@ -41,22 +41,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       title: 'Flutter Demo',
       darkTheme: ThemeData.dark(),
       theme: ThemeData(
-          brightness: Provider
-              .of<PrefsNotifier>(context)
-              .userDarkMode
+          brightness: Provider.of<PrefsNotifier>(context).userDarkMode
               ? Brightness.dark
               : Brightness.light,
-          canvasColor: Theme
-              .of(context)
-              .brightness == Brightness.dark ||
-              Provider
-                  .of<PrefsNotifier>(context)
-                  .userDarkMode
+          canvasColor: Theme.of(context).brightness == Brightness.dark ||
+                  Provider.of<PrefsNotifier>(context).userDarkMode
               ? Colors.black
               : Colors.white,
           primaryColor: primaryColor,
@@ -213,11 +206,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   _pageNavigatorKey.currentState
                       .pushReplacementNamed('/favorites');
                   Navigator.pop(context);
-                },
+                }, 
               ),
               ListTile(
                 title: Text('Settings'),
-                onTap: () => Navigator.pushNamed(context, '/settings'),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => SettingsPage(),
+                )),
               ),
             ],
           ),
