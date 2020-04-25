@@ -223,6 +223,11 @@ class _MyHomePageState extends State<MyHomePage> {
     Navigator.of(context).push(
         PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
           return SettingsPage();
+        }, transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            child: child,
+            opacity: animation,
+          );
         }));
   }
 }
