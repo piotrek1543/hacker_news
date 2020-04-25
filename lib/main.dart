@@ -224,13 +224,15 @@ class _MyHomePageState extends State<MyHomePage> {
         PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
           return SettingsPage();
         }, transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            child: child,
-            position: animation.drive(
-              Tween(
-                begin: Offset(1, 0),
-                end: Offset(0, 0),
-              ).chain(CurveTween(curve: Curves.easeOutCubic)),
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: animation.drive(
+                Tween(begin: 1.3, end: 1.0).chain(
+                  CurveTween(curve: Curves.easeOutCubic),
+                ),
+              ),
+              child: child,
             ),
           );
         }));
