@@ -206,19 +206,24 @@ class _MyHomePageState extends State<MyHomePage> {
                   _pageNavigatorKey.currentState
                       .pushReplacementNamed('/favorites');
                   Navigator.pop(context);
-                }, 
+                },
               ),
               ListTile(
                 title: Text('Settings'),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => SettingsPage(),
-                )),
+                onTap: () => _openSettings(context),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _openSettings(BuildContext context) {
+    Navigator.of(context).push(
+        PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
+          return SettingsPage();
+        }));
   }
 }
 
