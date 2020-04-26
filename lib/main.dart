@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -11,10 +13,20 @@ import 'package:hacker_news/src/pages/settings.dart';
 import 'package:hacker_news/src/widgets/headline.dart';
 import 'package:hacker_news/src/widgets/loading_info.dart';
 import 'package:hacker_news/src/widgets/search.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
+  // Set up logging to console. (In production, this might go to
+  // a rotating log, so that it can be sent to an analytics service
+  // when problems arise.)
+  Logger.root.level = Level.FINE; // Default is Level.INFO.
+  Logger.root.onRecord.listen((record) {
+    print('[${record.level.name}] ${record.loggerName} '
+        '-- ${record.time} -- ${record.message}');
+  });
+  
   runApp(
     MultiProvider(
       providers: [
@@ -50,9 +62,7 @@ class MyApp extends StatelessWidget {
               ? Brightness.dark
               : Brightness.light,
           canvasColor: Theme.of(context).brightness == Brightness.dark ||
-              Provider
-                  .of<PrefsNotifier>(context)
-                  .userDarkMode
+                  Provider.of<PrefsNotifier>(context).userDarkMode
               ? Colors.black
               : Colors.white,
           primaryColor: primaryColor,
@@ -168,13 +178,13 @@ class _MyHomePageState extends State<MyHomePage> {
           return AnimatedSwitcher(
             duration: Duration(milliseconds: 500),
             child: isLoading
-            // TODO: make sure that LoadingInfo is rotating when shown
-            //       or, better, collapse the two alternate widgets into one
+                // TODO: make sure that LoadingInfo is rotating when shown
+                //       or, better, collapse the two alternate widgets into one
                 ? LoadingInfo(loading)
                 : IconButton(
-              icon: Icon(Icons.menu),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            ),
+                    icon: Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
           );
         }),
       ),
@@ -335,15 +345,15 @@ class _Item extends StatelessWidget {
                     ),
                     prefs.showWebView
                         ? Container(
-                      height: 200,
-                      child: WebView(
-                        javascriptMode: JavascriptMode.unrestricted,
-                        initialUrl: article.url,
-                        gestureRecognizers: Set()
-                          ..add(Factory<VerticalDragGestureRecognizer>(
-                                  () => VerticalDragGestureRecognizer())),
-                      ),
-                    )
+                            height: 200,
+                            child: WebView(
+                              javascriptMode: JavascriptMode.unrestricted,
+                              initialUrl: article.url,
+                              gestureRecognizers: Set()
+                                ..add(Factory<VerticalDragGestureRecognizer>(
+                                    () => VerticalDragGestureRecognizer())),
+                            ),
+                          )
                         : Container(),
                   ],
                 ),
