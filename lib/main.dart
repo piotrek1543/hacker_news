@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
               ? Brightness.dark
               : Brightness.light,
           canvasColor: Theme.of(context).brightness == Brightness.dark ||
-                  Provider.of<PrefsNotifier>(context).userDarkMode
+              Provider.of<PrefsNotifier>(context).userDarkMode
               ? Colors.black
               : Colors.white,
           primaryColor: primaryColor,
@@ -59,7 +60,7 @@ class MyApp extends StatelessWidget {
               subhead: TextStyle(fontFamily: 'Garamond', fontSize: 10.0))),
       routes: {
         '/': (context) => MyHomePage(),
-        '/settings': (context) => SettingsPage(),
+        //  '/settings': (context) => SettingsPage(),
       },
     );
   }
@@ -139,13 +140,13 @@ class _MyHomePageState extends State<MyHomePage> {
           return AnimatedSwitcher(
             duration: Duration(milliseconds: 500),
             child: isLoading
-                // TODO: make sure that LoadingInfo is rotating when shown
-                //       or, better, collapse the two alternate widgets into one
+            // TODO: make sure that LoadingInfo is rotating when shown
+            //       or, better, collapse the two alternate widgets into one
                 ? LoadingInfo(loading)
                 : IconButton(
-                    icon: Icon(Icons.menu),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                  ),
+              icon: Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
           );
         }),
       ),
@@ -220,22 +221,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _openSettings(BuildContext context) {
-    Navigator.of(context).push(
-        PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) {
-          return SettingsPage();
-        }, transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(
-              scale: animation.drive(
-                Tween(begin: 1.3, end: 1.0).chain(
-                  CurveTween(curve: Curves.easeOutCubic),
-                ),
+    Navigator.of(context).push(PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return SettingsPage(initialAnimation: animation);
+      },
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: animation.drive(
+              Tween(begin: 1.3, end: 1.0).chain(
+                CurveTween(curve: Curves.easeOutCubic),
               ),
-              child: child,
             ),
-          );
-        }));
+            child: child,
+          ),
+        );
+      },
+    ));
   }
 }
 
@@ -304,15 +307,15 @@ class _Item extends StatelessWidget {
                     ),
                     prefs.showWebView
                         ? Container(
-                            height: 200,
-                            child: WebView(
-                              javascriptMode: JavascriptMode.unrestricted,
-                              initialUrl: article.url,
-                              gestureRecognizers: Set()
-                                ..add(Factory<VerticalDragGestureRecognizer>(
-                                    () => VerticalDragGestureRecognizer())),
-                            ),
-                          )
+                      height: 200,
+                      child: WebView(
+                        javascriptMode: JavascriptMode.unrestricted,
+                        initialUrl: article.url,
+                        gestureRecognizers: Set()
+                          ..add(Factory<VerticalDragGestureRecognizer>(
+                                  () => VerticalDragGestureRecognizer())),
+                      ),
+                    )
                         : Container(),
                   ],
                 ),
