@@ -50,7 +50,9 @@ class MyApp extends StatelessWidget {
               ? Brightness.dark
               : Brightness.light,
           canvasColor: Theme.of(context).brightness == Brightness.dark ||
-              Provider.of<PrefsNotifier>(context).userDarkMode
+              Provider
+                  .of<PrefsNotifier>(context)
+                  .userDarkMode
               ? Colors.black
               : Colors.white,
           primaryColor: primaryColor,
@@ -58,9 +60,35 @@ class MyApp extends StatelessWidget {
           textTheme: Theme.of(context).textTheme.copyWith(
               caption: TextStyle(color: Colors.white54),
               subhead: TextStyle(fontFamily: 'Garamond', fontSize: 10.0))),
-      routes: {
-        '/': (context) => MyHomePage(),
-        //  '/settings': (context) => SettingsPage(),
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case '/':
+            return MaterialPageRoute(
+              builder: (context) => MyHomePage(),
+            );
+          case '/settings':
+            return PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) {
+                return SettingsPage(initialAnimation: animation);
+              },
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: animation.drive(
+                      Tween(begin: 1.3, end: 1.0).chain(
+                        CurveTween(curve: Curves.easeOutCubic),
+                      ),
+                    ),
+                    child: child,
+                  ),
+                );
+              },
+            );
+          default:
+            throw UnimplementedError('no route for $settings');
+        }
       },
     );
   }
