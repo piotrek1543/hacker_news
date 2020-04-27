@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:io';
-import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hacker_news/src/article.dart';
 import 'package:hacker_news/src/notifiers/worker.dart';
-import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 class HackerNewsApiError extends Error {
   final String message;
@@ -23,9 +21,13 @@ class LoadingTabsCount extends ValueNotifier<int> {
 /// This class encapsulates the app's communication with the Hacker News API
 /// and which articles are fetched in which [tabs].
 class HackerNewsNotifier with ChangeNotifier {
+  static final _log = Logger('HackerNewsNotifier');
+
   List<HackerNewsTab> _tabs;
 
   HackerNewsNotifier(LoadingTabsCount loading) {
+    _log.fine('constructor called');
+
     _tabs = [
       HackerNewsTab(
         StoriesType.topStories,
@@ -41,7 +43,10 @@ class HackerNewsNotifier with ChangeNotifier {
       ),
     ];
 
-    scheduleMicrotask(() => _tabs.first.refresh());
+    scheduleMicrotask(() {
+      _log.fine('First refresh of first tab called');
+      _tabs.first.refresh();
+    });
   }
 
   /// Articles from all tabs. De-duplicated.
@@ -52,6 +57,8 @@ class HackerNewsNotifier with ChangeNotifier {
 }
 
 class HackerNewsTab with ChangeNotifier {
+  final Logger _log;
+
   final StoriesType storiesType;
 
   final String name;
@@ -66,20 +73,26 @@ class HackerNewsTab with ChangeNotifier {
 
   final LoadingTabsCount loadingTabsCount;
 
-  HackerNewsTab(this.storiesType, this.name, this.icon, this.loadingTabsCount);
+  HackerNewsTab(this.storiesType, this.name, this.icon, this.loadingTabsCount)
+      // In this case, we want the logger name to have the type of the stories
+      // in it. So we make it an instance field, and initialize it here.
+      : _log = Logger('HackerNewsTab.$storiesType');
 
   UnmodifiableListView<Article> get articles => UnmodifiableListView(_articles);
 
   Future<void> refresh() async {
+    _log.info('refresh() called');
     _isLoading = true;
     notifyListeners();
     loadingTabsCount.value += 1;
 
     final worker = Worker();
     await worker.isReady;
+    _log.fine('worker created and ready, fetching');
 
     _articles = await worker.fetch(storiesType);
     _isLoading = false;
+    _log.fine('articles fetched');
 
     worker.dispose();
 
@@ -88,6 +101,7 @@ class HackerNewsTab with ChangeNotifier {
     await Future.delayed(const Duration(seconds: 1));
     notifyListeners();
     loadingTabsCount.value -= 1;
+    _log.fine('articles refreshed, listeners notified');
   }
 }
 
